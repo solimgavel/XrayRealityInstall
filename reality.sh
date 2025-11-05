@@ -272,7 +272,7 @@ add_short_id() {
 delete_short_id() {
     echo "Deleting short ID..."
     
-    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' "$CONFIG" 2>/dev/null)
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[]?' "$CONFIG" 2>/dev/null)
     
     if [[ -z "$short_ids" ]]; then
         echo "No short IDs found in config!"
@@ -304,7 +304,7 @@ delete_short_id() {
     
     local short_id_to_delete="${short_id_array[$((selection-1))]}"
     
-    cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortId |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
+    cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
     copy_config
 
     echo "Short ID $short_id_to_delete deleted successfully!"
@@ -400,7 +400,7 @@ menu() {
         echo "7. Help"
         echo "8. Exit"
         
-        read -p "Please choose an option [1-5]: " choice
+        read -p "Please choose an option [1-8]: " choice
 
         if [[ -z "${choice// }" ]]; then
           exit 0
