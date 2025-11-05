@@ -16,12 +16,13 @@ RESET="\033[0m"
 SCRIPT="$0"
 CURDIR="$(dirname $0)"
 XRAY_ORIG_CONFIG="/usr/local/etc/xray/config.json"
-TEMPL_CONFIG="$CURDIR/configs/config_1.json"
 CONFIG="$CURDIR/config.json"
 
-URL_FILE="$CURDIR/url.txt"
-
+TEMPL_CONFIG="$CURDIR/configs/config_1.json"
 CMFG_SITE="teamdocs.su"
+INBOUND_PORT="443"
+
+URL_FILE="$CURDIR/url.txt"
 
 trap "DIE" SIGHUP SIGINT SIGQUIT SIGABRT
 
@@ -142,7 +143,7 @@ function xray_new_config() {
     flow="xtls-rprx-vision"
     LOG INFO "using flow: ${flow}"
 
-    inbound_port="49649"
+    inbound_port="$INBOUND_PORT"
     LOG INFO "setting inbound listen port: ${inbound_port}"
 
     protocol_type="tcp"
