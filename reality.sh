@@ -238,7 +238,7 @@ add_short_id() {
     local new_short_id=$(generate_short_id 8)
     echo "Generated short ID: $new_short_id"
     
-    jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortId += [$new_id]' "$CONFIG"
+    jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG"
     
     if [[ $? -eq 0 ]]; then
         echo "Short ID $new_short_id added successfully!"
@@ -267,7 +267,7 @@ delete_short_id() {
         return 1
     fi
     
-    jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortId |= map(select(. != $del_id))' "$CONFIG"        
+    jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG"        
     if [[ $? -eq 0 ]]; then
         echo "Short ID $short_id_to_delete deleted successfully!"
         
@@ -283,7 +283,7 @@ delete_short_id() {
 }
 
 list_short_ids() {
-    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' /usr/local/etc/xray/config.json 2>/dev/null)
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[]?' "$CONFIG")
     
     if [[ -n "$short_ids" ]]; then
         echo "Current short IDs:"
