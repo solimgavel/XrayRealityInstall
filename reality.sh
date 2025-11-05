@@ -353,9 +353,11 @@ manage_app() {
         echo "4. Get vless profile"
         echo "5. Exit"
         
-        read -p "$(echo 'Please choose an option [1-5]: ')" choice
+        # read -p "$(echo 'Please choose an option [1-5]: ')" choice
+        read -p "Please choose an option [1-5] or press Enter to exit: " choice
 
-        if [[ -z '$choice' ]]; then
+        # if [[ -z '$choice' ]]; then
+        if [[ -z "${choice// }" ]]; then
           exit 0
         fi
 
