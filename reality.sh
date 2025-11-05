@@ -239,6 +239,7 @@ add_short_id() {
     echo "Generated short ID: $new_short_id"
     
     cat <<< $(jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG") > "$CONFIG"
+    copy_config
     
     if [[ $? -eq 0 ]]; then
         echo "Short ID $new_short_id added successfully!"
