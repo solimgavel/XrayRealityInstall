@@ -314,6 +314,8 @@ get_vless_profile() {
         return 1
     fi
     
+    local uuid=$(jq -r '.inbounds[0].settings.clients[0].id?' "$CONFIG")
+
     local selected_short_id="${short_id_array[$((selection-1))]}"
     echo "Selected short ID: $selected_short_id"
     
@@ -321,11 +323,12 @@ get_vless_profile() {
     local private_key=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey?' "$CONFIG")
     local server_port=$(jq -r '.inbounds[0].port?' "$CONFIG")
     
-    local public_key=$(echo "$private_key" | base64 -d | openssl ec -pubout -outform der 2>/dev/null | tail -c 65 | base64 -w 0 | tr '/+' '_-' | tr -d '=' 2>/dev/null)
+    # local public_key=$(echo "$private_key" | base64 -d | openssl ec -pubout -outform der 2>/dev/null | tail -c 65 | base64 -w 0 | tr '/+' '_-' | tr -d '=' 2>/dev/null)
+    local public_key=$(jq -r '.inbounds[0].streamSettings.realitySettings.publicKey?' "$CONFIG")
     
     server_ip=$(curl -s https://2ip.io | awk '{print $1}')
     
-    local vless_url="vless://uuid@${server_ip}:${server_port}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${server_name}&fp=chrome&pbk=${public_key}&sid=${selected_short_id}&type=tcp&headerType=none#Xray-Reality"
+    local vless_url="vless://${uuid}@${server_ip}:${server_port}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${server_name}&fp=chrome&pbk=${public_key}&sid=${selected_short_id}&type=tcp&headerType=none#Xray-Reality"
     
     echo ""
     echo "=== VLESS URL ==="
