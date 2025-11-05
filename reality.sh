@@ -247,20 +247,64 @@ add_short_id() {
     systemctl restart xray
 }
 
+# delete_short_id() {
+#     echo "Deleting short ID..."
+#     
+#     list_short_ids
+#     
+#     echo "Enter the short ID to delete:"
+#     read -r short_id_to_delete
+#     
+#     if [[ -z "$short_id_to_delete" ]]; then
+#         echo "No short ID entered!"
+#         return 1
+#     fi
+#     
+#     cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
+#     copy_config
+#
+#     echo "Short ID $short_id_to_delete deleted successfully!"
+#     
+#     list_short_ids
+#     systemctl restart xray
+# }
+
 delete_short_id() {
     echo "Deleting short ID..."
     
-    list_short_ids
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' "$CONFIG" 2>/dev/null)
     
-    echo "Enter the short ID to delete:"
-    read -r short_id_to_delete
-    
-    if [[ -z "$short_id_to_delete" ]]; then
-        echo "No short ID entered!"
+    if [[ -z "$short_ids" ]]; then
+        echo "No short IDs found in config!"
         return 1
     fi
     
-    cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
+    local i=1
+    local short_id_array=()
+    while IFS= read -r id; do
+        if [[ -n "$id" ]]; then
+            echo "$i. $id"
+            short_id_array+=("$id")
+            ((i++))
+        fi
+    done <<< "$short_ids"
+    
+    if [[ ${#short_id_array[@]} -eq 0 ]]; then
+        echo "No valid short IDs found!"
+        return 1
+    fi
+    
+    echo ""
+    read -p "Select short ID by number [1-${#short_id_array[@]}]: " selection
+    
+    if ! [[ "$selection" =~ ^[0-9]+$ ]] || [[ "$selection" -lt 1 ]] || [[ "$selection" -gt ${#short_id_array[@]} ]]; then
+        echo "Invalid selection!"
+        return 1
+    fi
+    
+    local short_id_to_delete="${short_id_array[$((selection-1))]}"
+    
+    cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortId |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
     copy_config
 
     echo "Short ID $short_id_to_delete deleted successfully!"
@@ -344,7 +388,7 @@ get_vless_profile() {
     # echo "URL saved to: $output_file"
 }
 
-manage_app() {
+menu() {
     while true; do
         echo "What do you want to do?"
         echo "1. Add new short ID"
@@ -409,7 +453,7 @@ function main() {
                 xray_new_config --qrencode
                 xray_run
             else
-                manage_app
+                menu
             fi
 
             ;;
