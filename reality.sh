@@ -351,7 +351,10 @@ manage_app() {
         echo "2. Delete short ID"
         echo "3. List all short IDs"
         echo "4. Get vless profile"
-        echo "5. Exit"
+        echo "5. Replace all config"
+        echo "6. Update packages"
+        echo "7. Help"
+        echo "8. Exit"
         
         read -p "Please choose an option [1-5]: " choice
 
@@ -374,6 +377,17 @@ manage_app() {
                 break
                 ;;
             5)
+                xray_new_config "$@"
+                xray_run
+                break
+                ;;
+            6)
+                install_pkgs "$@"
+                ;;
+            7)
+                usage_msg
+                ;;
+            8)
                 break
                 ;;
             *)
@@ -403,6 +417,7 @@ function main() {
             shift
             xray_new_config "$@"
             xray_run
+            exit 0
             ;;
         "update")
             shift
