@@ -283,7 +283,7 @@ list_short_ids() {
 }
 
 get_vless_profile() {
-    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' /usr/local/etc/xray/config.json 2>/dev/null)
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[]?' "$CONFIG")
     
     if [[ -z "$short_ids" ]]; then
         echo "No short IDs found in config!"
