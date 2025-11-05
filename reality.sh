@@ -232,14 +232,114 @@ function xray_run() {
 
 }
 
+add_short_id() {
+    echo "Adding new short ID..."
+    
+    local new_short_id=$(generate_short_id 8)
+    echo "Generated short ID: $new_short_id"
+    
+    jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortId += [$new_id]' "$CONFIG"
+    
+    if [[ $? -eq 0 ]]; then
+        echo "Short ID $new_short_id added successfully!"
+        
+        systemctl restart xray
+        if [[ $? -eq 0 ]]; then
+            echo "Xray service restarted successfully"
+            echo "All active short IDs:"
+            list_short_ids
+        else
+            echo "Failed to restart Xray service"
+        fi
+    fi
+}
+
+delete_short_id() {
+    echo "Deleting short ID..."
+    
+    list_short_ids
+    
+    echo "Enter the short ID to delete:"
+    read -r short_id_to_delete
+    
+    if [[ -z "$short_id_to_delete" ]]; then
+        echo "No short ID entered!"
+        return 1
+    fi
+    
+    jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortId |= map(select(. != $del_id))' "$CONFIG"        
+    if [[ $? -eq 0 ]]; then
+        echo "Short ID $short_id_to_delete deleted successfully!"
+        
+        systemctl restart xray
+        if [[ $? -eq 0 ]]; then
+            echo "Xray service restarted successfully"
+            echo "Remaining short IDs:"
+            list_short_ids
+        else
+            echo "Failed to restart Xray service"
+        fi
+    fi
+}
+
+list_short_ids() {
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' /usr/local/etc/xray/config.json 2>/dev/null)
+    
+    if [[ -n "$short_ids" ]]; then
+        echo "Current short IDs:"
+        echo "$short_ids" | while read -r id; do
+            echo "  - $id"
+        done
+    else
+        echo "No short IDs found in config"
+    fi
+}
+
+manage_app() {
+    while true; do
+        echo "What do you want to do?"
+        echo "1. Add new short ID"
+        echo "2. Delete short ID"
+        echo "3. List all short IDs"
+        echo "4. Exit"
+        
+        read -p "$(echo 'Please choose an option [1-4]: ')" choice
+        
+        case $choice in
+            1)
+                add_short_id
+                ;;
+            2)
+                delete_short_id
+                ;;
+            3)
+                list_short_ids
+                ;;
+            4)
+                break
+                ;;
+            *)
+                echo "Invalid option!"
+                ;;
+        esac
+        
+        echo
+    done
+}
+
 function main() {
     case "$1" in
         "init" | "")
             shift
-            sanity_checks
-            install_pkgs
-            xray_new_config --qrencode
-            xray_run
+            if [[ ! -f "/usr/local/etc/xray/config.json" ]]; then
+                sanity_checks
+                install_pkgs
+                xray_new_config --qrencode
+                xray_run
+            else
+                manage_app
+            fi
+
             ;;
         "config")
             shift
