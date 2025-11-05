@@ -241,18 +241,10 @@ add_short_id() {
     cat <<< $(jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG") > "$CONFIG"
     copy_config
     
-    if [[ $? -eq 0 ]]; then
-        echo "Short ID $new_short_id added successfully!"
-        
-        systemctl restart xray
-        if [[ $? -eq 0 ]]; then
-            echo "Xray service restarted successfully"
-            echo "All active short IDs:"
-            list_short_ids
-        else
-            echo "Failed to restart Xray service"
-        fi
-    fi
+    echo "Short ID $new_short_id added successfully!"
+    
+    list_short_ids
+    systemctl restart xray
 }
 
 delete_short_id() {
@@ -271,18 +263,10 @@ delete_short_id() {
     cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
     copy_config
 
-    if [[ $? -eq 0 ]]; then
-        echo "Short ID $short_id_to_delete deleted successfully!"
-        
-        systemctl restart xray
-        if [[ $? -eq 0 ]]; then
-            echo "Xray service restarted successfully"
-            echo "Remaining short IDs:"
-            list_short_ids
-        else
-            echo "Failed to restart Xray service"
-        fi
-    fi
+    echo "Short ID $short_id_to_delete deleted successfully!"
+    
+    list_short_ids
+    systemctl restart xray
 }
 
 list_short_ids() {
