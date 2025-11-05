@@ -268,7 +268,9 @@ delete_short_id() {
         return 1
     fi
     
-    jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG"        
+    cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
+    copy_config
+
     if [[ $? -eq 0 ]]; then
         echo "Short ID $short_id_to_delete deleted successfully!"
         
