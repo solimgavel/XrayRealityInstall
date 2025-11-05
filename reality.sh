@@ -16,7 +16,7 @@ RESET="\033[0m"
 SCRIPT="$0"
 CURDIR="$(dirname $0)"
 XRAY_ORIG_CONFIG="/usr/local/etc/xray/config.json"
-TEMPL_CONFIG="$CURDIR/configs/config.json"
+TEMPL_CONFIG="$CURDIR/configs/config_1.json"
 CONFIG="$CURDIR/config.json"
 
 URL_FILE="$CURDIR/url.txt"
