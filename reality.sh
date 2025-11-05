@@ -247,28 +247,6 @@ add_short_id() {
     systemctl restart xray
 }
 
-# delete_short_id() {
-#     echo "Deleting short ID..."
-#     
-#     list_short_ids
-#     
-#     echo "Enter the short ID to delete:"
-#     read -r short_id_to_delete
-#     
-#     if [[ -z "$short_id_to_delete" ]]; then
-#         echo "No short ID entered!"
-#         return 1
-#     fi
-#     
-#     cat <<< $(jq --arg del_id "$short_id_to_delete" '.inbounds[0].streamSettings.realitySettings.shortIds |= map(select(. != $del_id))' "$CONFIG") > "$CONFIG"
-#     copy_config
-#
-#     echo "Short ID $short_id_to_delete deleted successfully!"
-#     
-#     list_short_ids
-#     systemctl restart xray
-# }
-
 delete_short_id() {
     echo "Deleting short ID..."
     
