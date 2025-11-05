@@ -238,7 +238,7 @@ add_short_id() {
     new_short_id=$(openssl rand -hex 4)
     echo "Generated short ID: $new_short_id"
     
-    jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG"
+    cat <<< $(jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG") > "$CONFIG"
     
     if [[ $? -eq 0 ]]; then
         echo "Short ID $new_short_id added successfully!"
