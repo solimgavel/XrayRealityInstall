@@ -282,13 +282,73 @@ list_short_ids() {
     fi
 }
 
+get_vless_profile() {
+    local short_ids=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortId[]?' /usr/local/etc/xray/config.json 2>/dev/null)
+    
+    if [[ -z "$short_ids" ]]; then
+        echo "No short IDs found in config!"
+        return 1
+    fi
+    
+    echo "Available short IDs:"
+    local i=1
+    local short_id_array=()
+    while IFS= read -r id; do
+        if [[ -n "$id" ]]; then
+            echo "$i. $id"
+            short_id_array+=("$id")
+            ((i++))
+        fi
+    done <<< "$short_ids"
+    
+    if [[ ${#short_id_array[@]} -eq 0 ]]; then
+        echo "No valid short IDs found!"
+        return 1
+    fi
+    
+    echo ""
+    read -p "Select short ID by number [1-${#short_id_array[@]}]: " selection
+    
+    if ! [[ "$selection" =~ ^[0-9]+$ ]] || [[ "$selection" -lt 1 ]] || [[ "$selection" -gt ${#short_id_array[@]} ]]; then
+        echo "Invalid selection!"
+        return 1
+    fi
+    
+    local selected_short_id="${short_id_array[$((selection-1))]}"
+    echo "Selected short ID: $selected_short_id"
+    
+    local server_name=$(jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0]?' "$CONFIG")
+    local private_key=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey?' "$CONFIG")
+    local server_port=$(jq -r '.inbounds[0].port?' "$CONFIG")
+    
+    local public_key=$(echo "$private_key" | base64 -d | openssl ec -pubout -outform der 2>/dev/null | tail -c 65 | base64 -w 0 | tr '/+' '_-' | tr -d '=' 2>/dev/null)
+    
+    server_ip=$(curl -s https://2ip.io | awk '{print $1}')
+    
+    local vless_url="vless://uuid@${server_ip}:${server_port}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${server_name}&fp=chrome&pbk=${public_key}&sid=${selected_short_id}&type=tcp&headerType=none#Xray-Reality"
+    
+    echo ""
+    echo "=== VLESS URL ==="
+    echo "$vless_url"
+    echo ""
+    
+    echo "=== QR Code ==="
+    qrencode -t ANSIUTF8 "$vless_url"
+    echo ""
+    
+    # local output_file="vless_url_${selected_short_id}.txt"
+    # echo "$vless_url" > "$output_file"
+    # echo "URL saved to: $output_file"
+}
+
 manage_app() {
     while true; do
         echo "What do you want to do?"
         echo "1. Add new short ID"
         echo "2. Delete short ID"
         echo "3. List all short IDs"
-        echo "4. Exit"
+        echo "4. Get vless profile"
+        echo "5. Exit"
         
         read -p "$(echo 'Please choose an option [1-4]: ')" choice
         
@@ -303,6 +363,9 @@ manage_app() {
                 list_short_ids
                 ;;
             4)
+                get_vless_profile
+                ;;
+            5)
                 break
                 ;;
             *)
