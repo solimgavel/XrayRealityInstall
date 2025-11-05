@@ -235,7 +235,7 @@ function xray_run() {
 add_short_id() {
     echo "Adding new short ID..."
     
-    local new_short_id=$(generate_short_id 8)
+    new_short_id=$(openssl rand -hex 4)
     echo "Generated short ID: $new_short_id"
     
     jq --arg new_id "$new_short_id" '.inbounds[0].streamSettings.realitySettings.shortIds += [$new_id]' "$CONFIG"
