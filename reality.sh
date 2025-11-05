@@ -353,7 +353,7 @@ manage_app() {
         echo "4. Get vless profile"
         echo "5. Exit"
         
-        read -p "$(echo 'Please choose an option [1-4]: ')" choice
+        read -p "$(echo 'Please choose an option [1-5]: ')" choice
         
         case $choice in
             1)
@@ -367,8 +367,9 @@ manage_app() {
                 ;;
             4)
                 get_vless_profile
+                break
                 ;;
-            5)
+            5 | '\n')
                 break
                 ;;
             *)
