@@ -354,7 +354,11 @@ manage_app() {
         echo "5. Exit"
         
         read -p "$(echo 'Please choose an option [1-5]: ')" choice
-        
+
+        if [[ -z '$choice' ]]; then
+          exit 0
+        fi
+
         case $choice in
             1)
                 add_short_id
@@ -369,7 +373,7 @@ manage_app() {
                 get_vless_profile
                 break
                 ;;
-            5 | '\n')
+            5)
                 break
                 ;;
             *)
